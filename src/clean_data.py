@@ -1,8 +1,8 @@
 """
-NYC Airbnb 리스팅 데이터 정제 스크립트
+NYC Airbnb listings data cleaning script.
 
-price가 비어있는 리스팅을 제외하고, 상위 1% 가격대를 luxury 세그먼트로 표시한 뒤
-정제된 데이터를 저장한다
+Drops listings with missing price, and flags the top 1% of prices
+as a luxury segment before saving the cleaned data.
 """
 import pandas as pd
 
@@ -12,13 +12,13 @@ PROCESSED_PATH = "data/processed/listings_clean.csv"
 
 def main():
     df = pd.read_csv(RAW_PATH)
-    print(f"원본 행 개수: {len(df)}")
+    print(f"Original row count: {len(df)}")
 
     df_clean = df.dropna(subset=["price"]).copy()
-    print(f"price 있는 행만 남긴 뒤 행 개수: {len(df_clean)}")
+    print(f"Row count after dropping missing price: {len(df_clean)}")
 
     threshold = df_clean["price"].quantile(0.99)
-    print(f"상위 1% 기준선(99th percentile): {threshold:.2f}달러")
+    print(f"Top 1% threshold (99th percentile): ${threshold:.2f}")
 
     df_clean["segment"] = df_clean["price"].apply(
         lambda p: "luxury" if p >= threshold else "mainstream"
@@ -26,7 +26,7 @@ def main():
     print(df_clean["segment"].value_counts())
 
     df_clean.to_csv(PROCESSED_PATH, index=False)
-    print(f"{PROCESSED_PATH} 저장 완료")
+    print(f"Saved to {PROCESSED_PATH}")
 
 
 if __name__ == "__main__":
